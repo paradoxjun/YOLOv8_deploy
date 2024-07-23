@@ -1,0 +1,31 @@
+coco_class_names = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
+                    'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog',
+                    'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella', 'handbag',
+                    'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite', 'baseball bat',
+                    'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle', 'wine glass', 'cup', 'fork',
+                    'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich', 'orange', 'broccoli', 'carrot', 'hot dog',
+                    'pizza', 'donut', 'cake', 'chair', 'couch', 'potted plant', 'bed', 'dining table', 'toilet', 'tv',
+                    'laptop', 'mouse', 'remote', 'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink',
+                    'refrigerator', 'book', 'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush']
+
+hand_class_names = {
+    0: 'call',
+    1: 'dislike',
+    2: 'fist',
+    3: 'four',
+    4: 'like',
+    5: 'mute',
+    6: 'ok',
+    7: 'one',
+    8: 'palm',
+    9: 'peace',
+    10: 'rock',
+    11: 'stop',
+    12: 'stop_inverted',
+    13: 'three',
+    14: 'two_up',
+    15: 'two_up_inverted',
+    16: 'three2',
+    17: 'peace_inverted',
+    18: 'no_gesture'
+}
