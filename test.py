@@ -21,7 +21,6 @@ if __name__ == '__main__':
     from PIL import Image
     from io import BytesIO
 
-
     def base64_to_img(base64_string, rgb=True):
         decoded_bytes = base64.b64decode(base64_string)  # 解码 Base64 字符串
         image = np.array(Image.open(BytesIO(decoded_bytes)))  # 将字节流转换为图像对象
