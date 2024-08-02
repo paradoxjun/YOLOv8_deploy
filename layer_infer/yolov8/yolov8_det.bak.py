@@ -1,20 +1,18 @@
-import error_type.error_common as error_common
+import values.error_type as error_common
 import values.result_code as result_code
 
 from datetime import datetime
-from values.det_class_name import hand_class_names
-from yolov8_det.utils.yolov8 import YOLOv8
-from yolov8_det.utils.image import draw_detections_on_raw_image, img_to_base64
+from layer_infer.yolov8.utils.yolov8 import YOLOv8
+from utils.ops_image import draw_detections_on_raw_image, img_to_base64
 
 
-_MODEL_PATH = r'../models/det_hand/hands_07_15_m.onnx'
 _IMG_SIZE = (640, 640)
 _CONF_THRES = 0.25
 _IOU_THRES = 0.5
 
 
 class HandDetector:
-    def __init__(self, model_path=_MODEL_PATH, img_size=_IMG_SIZE, conf_thres=_CONF_THRES, iou_thres=_IOU_THRES):
+    def __init__(self, model_path, img_size=_IMG_SIZE, conf_thres=_CONF_THRES, iou_thres=_IOU_THRES):
         self.det_model = YOLOv8(model_path=model_path, img_size=img_size, conf_thres=conf_thres, iou_thres=iou_thres)
 
     def __call__(self, image_input, output_image=True):
@@ -28,6 +26,8 @@ class HandDetector:
 
         try:
             bbox, conf, cls, cost = self.det_model(image_input)
+            print(bbox, conf, cls, cost)
+
             cost_time = [round(x * 1000, 2) for x in cost]
 
             info = (f"RUN SUCCESS: Total time: {cost_time[0]} ms, Preprocess time: {cost_time[1]} ms, "
@@ -35,7 +35,7 @@ class HandDetector:
 
             if output_image:
                 image_origin = self.det_model.get_image(image_input)
-                draw_detections_on_raw_image(image_origin, bbox, conf, cls, hand_class_names)
+                draw_detections_on_raw_image(image_origin, bbox, conf, cls, {0: 'hand'})
                 image_plot = img_to_base64(image_origin)
 
         except error_common.PreProcessError as e:
@@ -56,9 +56,9 @@ class HandDetector:
 
         result = {
             'state': result_state,      # 状态码
-            'bbox': bbox.tolist(),      # 检测框：xyxy int[4]
-            'conf': conf.tolist(),      # 置信度：float[1]
-            'cls': cls.tolist(),        # 类别：int[1]
+            'bbox': list(bbox),         # 检测框：xyxy int[4]
+            'conf': list(conf),         # 置信度：float[1]
+            'cls': list(cls),           # 类别：int[1]
             'cost_time': cost_time,     # 消耗时间：float[4] ms
             'info': info,               # 描述信息：str
             'flow_no': time_string,     # 流水号：str
@@ -70,9 +70,10 @@ class HandDetector:
 
 if __name__ == '__main__':
     import cv2
-    from yolov8_det.utils.image import base64_to_img
+    from utils.ops_image import base64_to_img
 
-    hand_det = HandDetector()
+    MODEL_PATH = r'../../../models/det_hand/yolov8_det_hands_s_07_11.onnx'
+    hand_det = HandDetector(MODEL_PATH, img_size=(640, 640))
     img = "https://pic4.zhimg.com/80/v2-81b33cc28e4ba869b7c2790366708e97_1440w.webp"
     res = hand_det(img, output_image=False)
     print(res)

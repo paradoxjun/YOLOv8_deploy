@@ -29,3 +29,10 @@ hand_class_names = {
     17: 'peace_inverted',
     18: 'no_gesture'
 }
+
+atm_broken_class_names = {
+    0: 'hammer',
+    1: 'brick',
+    2: 'cell phone',
+    3: 'bottle',
+}

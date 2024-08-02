@@ -1,0 +1,5 @@
+from layer_business.det_hand.detHandHandler import det_hand_bp
+from layer_business.det_coco.detCOCOHandler import det_coco_bp
+from layer_business.det_bank_desk.detBankDeskHandler import det_bank_desk_bp
+from layer_business.det_atm_broken.detAtmBrokenHandler import det_atm_broken_bp
+from layer_business.det_person.detPersonHandler import det_person_bp

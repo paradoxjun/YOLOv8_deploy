@@ -2,6 +2,9 @@ import numpy as np
 
 
 def nms(boxes, scores, iou_threshold):
+    boxes = np.array(boxes)
+    scores = np.array(scores)
+
     # Sort by score
     sorted_indices = np.argsort(scores)[::-1]
 

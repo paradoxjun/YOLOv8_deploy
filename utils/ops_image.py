@@ -1,17 +1,57 @@
 import base64
 import cv2
+import requests
+import os
+import sys
+
 import numpy as np
 from PIL import Image
 from io import BytesIO
-
-import os
-import sys
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.abspath(os.path.join(current_dir, '../..'))
 sys.path.insert(0, project_root)
 
+import values.error_type as error_common
 from values.colors import colors_bgr as colors
+from values.strings import legal_url_v1
+
+
+def get_image(image_input):
+    read_type = "url"
+
+    if isinstance(image_input, str):
+        if legal_url_v1.match(image_input):
+            try:
+                response = requests.get(image_input)
+                img_rgb = np.array(Image.open(BytesIO(response.content)).convert('RGB'))
+
+            except Exception as e:
+                raise error_common.ParsingUrlError(f"{e}: Unable to parse URL.")
+        else:
+            try:
+                img_data = base64.b64decode(image_input)
+                img_rgb = np.array(Image.open(BytesIO(img_data)).convert('RGB'))
+                read_type = "base64"
+
+            except Exception:
+                try:
+                    img = cv2.imread(image_input)
+                    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    read_type = "image path"
+
+                except Exception as e:
+                    raise error_common.ReadImageError(f"{e}: Read image failed, get invalid input str.")
+
+    elif isinstance(image_input, np.ndarray):
+        img_rgb = image_input
+    else:
+        raise error_common.InputFormatError(f"Error: Get invalid input format {type(image_input)}")
+
+    if img_rgb is None or len(img_rgb.shape) != 3:
+        raise error_common.InvalidImageError(f"Error: Get invalid image (None or dim != 3), read by [{read_type}]")
+
+    return img_rgb
 
 
 def img_to_base64(image_rgb, rgb=True):
@@ -85,13 +125,14 @@ def draw_detections_on_raw_image(image, boxes, scores, class_ids, class_names=No
     text_thickness = int(min([img_height, img_width]) * 0.002)
 
     for box, class_id, score in zip(boxes, class_ids, scores):
-        color = colors[class_id]
-        x1, y1, x2, y2 = box.astype(int)
+        color = colors[class_id % len(colors)]
+
+        x1, y1, x2, y2 = list(map(int, box)) if isinstance(box, (list, tuple)) else box.astype(int)
 
         # Draw bbox
         cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
 
-        label = class_names[class_id] if class_names is not None else str(int(class_id))
+        label = str(int(class_id)) if class_names is None else class_names[class_id]
         caption = f'{label} {int(score * 100)}%'
 
         # Draw text
@@ -114,7 +155,7 @@ def draw_detections_pipeline(image_det, boxes, scores, class_ids, class_names=No
     for box, class_id in zip(boxes, class_ids):
         # 必须先画，否则多次叠加胡导致不同目标颜色深浅不同
         color = colors[class_id]
-        x1, y1, x2, y2 = box.astype(int)
+        x1, y1, x2, y2 = list(map(int, box)) if isinstance(box, (list, tuple)) else box.astype(int)
 
         # Draw fill rectangle in mask image
         cv2.rectangle(image, (x1, y1), (x2, y2), color, -1)
@@ -123,7 +164,7 @@ def draw_detections_pipeline(image_det, boxes, scores, class_ids, class_names=No
 
     for box, class_id, score in zip(boxes, class_ids, scores):
         color = colors[class_id]
-        x1, y1, x2, y2 = box.astype(int)
+        x1, y1, x2, y2 = list(map(int, box)) if isinstance(box, (list, tuple)) else box.astype(int)
 
         # Draw bbox
         cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
@@ -165,14 +206,14 @@ def draw_detections(image, boxes, scores, class_ids, class_names=None, mask_alph
 
 
 def draw_box(image: np.ndarray, box: np.ndarray, color=(0, 0, 255), thickness: int = 2) -> np.ndarray:
-    x1, y1, x2, y2 = box.astype(int)
+    x1, y1, x2, y2 = list(map(int, box)) if isinstance(box, (list, tuple)) else box.astype(int)
 
     return cv2.rectangle(image, (x1, y1), (x2, y2), color, thickness)
 
 
 def draw_text(image: np.ndarray, text: str, box: np.ndarray, color=(0, 0, 255), font_size: float = 0.001,
               text_thickness: int = 2) -> np.ndarray:
-    x1, y1, x2, y2 = box.astype(int)
+    x1, y1, x2, y2 = list(map(int, box)) if isinstance(box, (list, tuple)) else box.astype(int)
     (tw, th), _ = cv2.getTextSize(text=text, fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                                   fontScale=font_size, thickness=text_thickness)
     th = int(th * 1.2)
@@ -190,7 +231,7 @@ def draw_masks(image: np.ndarray, boxes: np.ndarray, classes: np.ndarray, mask_a
     for box, class_id in zip(boxes, classes):
         color = colors[class_id]
 
-        x1, y1, x2, y2 = box.astype(int)
+        x1, y1, x2, y2 = list(map(int, box)) if isinstance(box, (list, tuple)) else box.astype(int)
 
         # Draw fill rectangle in mask image
         cv2.rectangle(mask_img, (x1, y1), (x2, y2), color, -1)
