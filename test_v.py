@@ -7,11 +7,11 @@ from utils.ops_video import get_cap
 from utils.ops_image import resize_image
 
 # rtsp_url = "rtsp://admin:gzjh@123@192.168.93.2:554/h264/ch1/main/av_stream"
-# rtsp_url = "rtsp://admin:gzjh@123@192.168.93.3:554/h264/ch1/main/av_stream"
+rtsp_url = "rtsp://admin:gzjh@123@192.168.93.3:554/h264/ch1/main/av_stream"
 # rtsp_url = "rtsp://admin:gzjh@123@192.168.93.4:554/h264/ch1/main/av_stream"
 http_url = "http://192.168.135.161:8880/live/1/hls.m3u8"
 results_url = "http://localhost:8888/det_hand/v_results"
-url = http_url
+url = rtsp_url
 
 # 创建一个 VideoCapture 对象
 cap = get_cap(url)
@@ -59,7 +59,7 @@ while True:
         print(f"Error encountered: {e}")
 
     # 显示帧
-    frame, _ = resize_image(frame, 600, 600)
+    frame, _ = resize_image(frame, 900, 900)
     cv2.imshow('Frame', frame)
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
