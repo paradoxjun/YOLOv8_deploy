@@ -76,6 +76,50 @@ def base64_to_img(base64_string, rgb=True):
     return image
 
 
+def resize_image(image, new_width=None, new_height=None, keep_wh_ratio=True):
+    """
+    Resize an image while keeping the aspect ratio intact if required.
+
+    :param image: Path to the input image or numpy array.
+    :param new_width: Desired width of the resized image.
+    :param new_height: Desired height of the resized image.
+    :param keep_wh_ratio: Boolean to keep width-height ratio.
+    :return: Resized image and the (width_ratio, height_ratio).
+    """
+    is_pil = False
+
+    if isinstance(image, np.ndarray):
+        original_height, original_width = image.shape[:2]
+    else:
+        original_width, original_height = image.size
+        is_pil = True
+
+    if new_width and not new_height:
+        new_height = int((new_width / original_width) * original_height) if keep_wh_ratio else int(original_height)
+    elif new_height and not new_width:
+        new_width = int((new_height / original_height) * original_width) if keep_wh_ratio else int(original_width)
+    elif new_width and new_height:
+        if keep_wh_ratio:
+            width_ratio = new_width / original_width
+            height_ratio = new_height / original_height
+            if width_ratio < height_ratio:
+                new_height = int(width_ratio * original_height)
+            else:
+                new_width = int(height_ratio * original_width)
+    elif not new_width and not new_height:
+        raise ValueError("Either new_width or new_height must be provided.")
+
+    if is_pil:
+        resized_img = image.resize((new_width, new_height), Image.ANTIALIAS)
+    else:
+        resized_img = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+
+    width_ratio = new_width / original_width
+    height_ratio = new_height / original_height
+
+    return resized_img, (width_ratio, height_ratio)
+
+
 def letterbox(im, new_shape=(640, 640), color=(114, 114, 114), auto=True, scalefill=False, scaleup=True, stride=32):
     """
     调整图片大小并填充以适应目标尺寸。

@@ -6,6 +6,10 @@ class ReadImageError(Exception):
     pass
 
 
+class ReadVideoError(Exception):
+    pass
+
+
 class InvalidImageError(Exception):
     pass
 
