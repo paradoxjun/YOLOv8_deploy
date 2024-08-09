@@ -4,3 +4,4 @@ from layer_business.det_coco.detCOCOHandler import det_coco_bp
 from layer_business.det_bank_desk.detBankDeskHandler import det_bank_desk_bp
 from layer_business.det_atm_broken.detAtmBrokenHandler import det_atm_broken_bp
 from layer_business.det_person.detPersonHandler import det_person_bp
+from layer_business.pose_person.posePersonHandler import pose_person_bp

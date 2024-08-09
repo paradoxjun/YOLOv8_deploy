@@ -4,7 +4,7 @@ from utils.ops_image import get_image, img_to_base64, draw_detections_on_raw_ima
 
 b64_img = img_to_base64(cv2.imread('./test_data/910002863_1986570470.jpg'), False)
 
-url = 'http://0.0.0.0:8888/det_atm_broken'
+url = 'http://0.0.0.0:8888/det_hand/base'
 data = {
     # 'image_input': 'https://pic4.zhimg.com/80/v2-81b33cc28e4ba869b7c2790366708e97_1440w.webp',
     'image_input': b64_img,

@@ -1,6 +1,7 @@
 def filter_detections(result, target_class_ids):
     # 将target_class_ids转换为集合以提高查找效率
-    target_class_ids_set = set(target_class_ids)
+    if not isinstance(target_class_ids, set):
+        target_class_ids_set = set(target_class_ids)
 
     # 初始化过滤后的结果列表
     filtered_bboxes = []

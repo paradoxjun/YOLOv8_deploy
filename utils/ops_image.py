@@ -58,20 +58,20 @@ def img_to_base64(image_rgb, rgb=True):
     if not rgb:
         image_rgb = cv2.cvtColor(np.array(image_rgb), cv2.COLOR_BGR2RGB)
 
-    image_pil = Image.fromarray(image_rgb)      # 将 RGB 张量转换为图像格式
-    buffered = BytesIO()    # 将图像编码为 PNG 格式
+    image_pil = Image.fromarray(image_rgb)  # 将 RGB 张量转换为图像格式
+    buffered = BytesIO()  # 将图像编码为 PNG 格式
     image_pil.save(buffered, format="JPEG")
-    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")     # 将编码后的图像转换为 Base64 字符串
+    img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")  # 将编码后的图像转换为 Base64 字符串
 
     return img_str
 
 
 def base64_to_img(base64_string, rgb=True):
-    decoded_bytes = base64.b64decode(base64_string)         # 解码 Base64 字符串
-    image = np.array(Image.open(BytesIO(decoded_bytes)))    # 将字节流转换为图像对象
+    decoded_bytes = base64.b64decode(base64_string)  # 解码 Base64 字符串
+    image = np.array(Image.open(BytesIO(decoded_bytes)))  # 将字节流转换为图像对象
 
     if not rgb:
-        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)    # 将 PIL 图像对象转换为 OpenCV 的 BGR 格式
+        image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)  # 将 PIL 图像对象转换为 OpenCV 的 BGR 格式
 
     return image
 
@@ -247,6 +247,74 @@ def draw_detections(image, boxes, scores, class_ids, class_names=None, mask_alph
         draw_text(det_img, caption, box, color, font_size, text_thickness)
 
     return det_img
+
+
+def draw_person_keypoints(image, boxes, kpts, scores, visibility, label='person', mask_alpha=0.3):
+    # lizhonghao 0808
+    '''绘制所有人体检测框和关键点实例'''
+    pose_img = image.copy()
+
+    img_height, img_width = image.shape[:2]
+    font_size = min([img_height, img_width]) * 0.0006
+    text_thickness = int(min([img_height, img_width]) * 0.001)
+
+    # print('debug -> draw_person_keypoints box.shape{} kpts.shape{}\n '.format(np.array(boxes).shape,
+    #                                                                           np.array(kpts).shape))
+    pose_img = draw_masks(pose_img, boxes, np.array([0] * len(boxes)), mask_alpha)
+    # 从colors中取颜色
+    # 关键点颜色
+    kpt_color = [16, 16, 16, 16, 16, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9]
+    # 骨骼颜色
+    limb_color = [9, 9, 9, 9, 7, 7, 7, 0, 0, 0, 0, 0, 16, 16, 16, 16, 16, 16, 16]
+    # bbox颜色
+    bbox_text_color = colors[0]
+    for idx, (box, kpt, score) in enumerate(zip(boxes, kpts, scores)):
+        draw_box(pose_img, box, bbox_text_color)
+        draw_single_keypoint(pose_img, kpt, visibility, kpt_color, limb_color)
+
+        caption = f'{label} {int(score * 100)}%'
+        draw_text(pose_img, caption, box, bbox_text_color, font_size, text_thickness)
+        # if idx > 5:
+        #     break
+
+    return pose_img
+
+
+def draw_single_keypoint(image: np.ndarray, kpt: np.ndarray, visibility: np.float32, kpt_color: list, limb_color: list):
+    from values.class_name_pose import coco_person_keypoint_class_name, coco_person_skeleton
+    # lizhonghao 0808
+    '''绘制单个人关键点'''
+    # keypoints = box[5:]
+    # single pose
+    keypoints = kpt
+    # print('debug -> draw_keypoint- >  keypoints{}'.format(keypoints))
+    print('debug -> draw_keypoint- >  keypoints.shape{}'.format(np.shape(keypoints)))
+    keypoints = np.array(keypoints).reshape(-1, 3)
+
+    # print('debug -> draw_keypoint  kpts.shape{}\n '.format(np.array(keypoints).shape))
+
+    for i, kp_ in enumerate(keypoints):
+        # todo 此处可用索引打印出关键点名称
+        x, y, conf = kp_
+        # color_k = [colors[x] for x in kpt_color[i]]
+        color_k = colors[kpt_color[i]]
+        if conf < visibility:
+            continue
+        if x != 0 and y != 0:
+            cv2.circle(image, (int(x), int(y)), 3, color_k, -1, lineType=cv2.LINE_AA)
+            # print('debug -> draw_keypoint {}th - pair_kp_x:{}_y:{}_conf:{}\n '.format(i, x, y, conf))
+
+    for i, sk in enumerate(coco_person_skeleton):
+        pos1 = (int(keypoints[(sk[0] - 1), 0]), int(keypoints[(sk[0] - 1), 1]))
+        pos2 = (int(keypoints[(sk[1] - 1), 0]), int(keypoints[(sk[1] - 1), 1]))
+
+        conf1 = keypoints[(sk[0] - 1), 2]
+        conf2 = keypoints[(sk[1] - 1), 2]
+        if conf1 < visibility or conf2 < visibility:
+            continue
+        if pos1[0] == 0 or pos1[1] == 0 or pos2[0] == 0 or pos2[1] == 0:
+            continue
+        cv2.line(image, pos1, pos2, colors[limb_color[i]], thickness=1, lineType=cv2.LINE_AA)
 
 
 def draw_box(image: np.ndarray, box: np.ndarray, color=(0, 0, 255), thickness: int = 2) -> np.ndarray:

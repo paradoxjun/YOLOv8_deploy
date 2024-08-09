@@ -118,7 +118,7 @@ class YOLOv8:
 
 
 if __name__ == '__main__':
-    from utils.ops_image import draw_detections_pipeline, img_to_base64
+    from utils.ops_image import draw_detections_pipeline, img_to_base64, get_image
 
     # 加载模型
     model_path = "../../../models/det_hand/yolov8_det_hands_s_07_11.onnx"
@@ -136,7 +136,7 @@ if __name__ == '__main__':
 
     # 推理并绘制图片
     for img in [img_1, img_2, img_3, img_4]:
-        img_rgb = yolov8_detector.get_image(img)
+        img_rgb = get_image(img)
         img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
 
         cv2.namedWindow("Output", cv2.WINDOW_NORMAL)

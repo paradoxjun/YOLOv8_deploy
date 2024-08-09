@@ -26,5 +26,9 @@ class DetectionInferError(Exception):
     pass
 
 
+class KeypointPredictionInferError(Exception):
+    pass
+
+
 class PostProcessError(Exception):
     pass
