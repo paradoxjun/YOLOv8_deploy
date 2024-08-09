@@ -1,6 +1,6 @@
 import values.error_type as error_common
 import values.result_code as result_code
-from layer_infer.yolov8.utils.yolov8_keypoint import YOLOv8KEYPOINTS
+from layer_infer.yolov8.utils.yolov8_keypoint import YOLOv8KPT
 from values.class_name_pose import atm_broken_action_keypoint_class_name
 
 _IMG_SIZE = (640, 640)
@@ -13,8 +13,8 @@ _CLASS_NAME = 'person'
 class YOLOv8PosePredictor:
     def __init__(self, model_path, img_size=_IMG_SIZE, conf_thres=_CONF_THRES, iou_thres=_IOU_THRES,
                  kpt_thres=_KPT_THRES, class_name=_CLASS_NAME):
-        self.pose_model = YOLOv8KEYPOINTS(model_path=model_path, img_size=img_size, conf_thres=conf_thres,
-                                          iou_thres=iou_thres, class_name=class_name, kpt_thres=kpt_thres)
+        self.pose_model = YOLOv8KPT(model_path=model_path, img_size=img_size, conf_thres=conf_thres,
+                                    iou_thres=iou_thres, class_name=class_name, kpt_thres=kpt_thres)
 
     def __call__(self, image_input):
         return self.pipeline(image_input)

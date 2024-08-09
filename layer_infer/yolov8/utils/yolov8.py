@@ -12,17 +12,13 @@ class YOLOv8:
         self.input_width = img_size[1]
         self.conf_threshold = conf_thres
         self.iou_threshold = iou_thres
-        self.initialize_model(model_path)       # Initialize model
+        self.initialize_model(model_path)  # Initialize model
 
     def __call__(self, image):
-        return self.detect_objects(image)
+        return self.pipeline(image)
 
-    def initialize_model(self, model_path):
-        self.session = onnxruntime.InferenceSession(model_path, providers=onnxruntime.get_available_providers())
-        self.get_model_details()
-
-    def detect_objects(self, image):
-        t0 = time.perf_counter()    # start time
+    def pipeline(self, image):
+        t0 = time.perf_counter()  # start time
         try:
             input_tensor = self.prepare_input(image)
 
@@ -33,7 +29,7 @@ class YOLOv8:
         except Exception as e:
             raise error_common.PreProcessError(f"{e}: Get input tensor failed.")
 
-        t1 = time.perf_counter()    # preprocess time
+        t1 = time.perf_counter()  # preprocess time
 
         try:
             outputs = self.inference(input_tensor)
@@ -41,7 +37,7 @@ class YOLOv8:
         except Exception as e:
             raise error_common.DetectionInferError(f"{e}: Detection model infer failed.")
 
-        t2 = time.perf_counter()    # model infer time
+        t2 = time.perf_counter()  # model infer time
 
         try:
             self.boxes, self.scores, self.class_ids = self.process_output(outputs)
@@ -49,12 +45,16 @@ class YOLOv8:
         except Exception as e:
             raise error_common.PostProcessError(f"{e}: Post-process failed.")
 
-        t3 = time.perf_counter()    # total time cost, and postprocess time
+        t3 = time.perf_counter()  # total time cost, and postprocess time
 
         # print(f"Total time: {(t3 - t0) * 1000:.2f} ms, Preprocess time: {(t1 - t0) * 1000:.2f} ms, "
         #       f"Inference time: {(t2 - t1) * 1000:.2f} ms, Postprocess time: {(t3 - t2) * 1000:.2f} ms.")
 
         return self.boxes, self.scores, self.class_ids, (t3 - t0, t1 - t0, t2 - t1, t3 - t2)
+
+    def initialize_model(self, model_path):
+        self.session = onnxruntime.InferenceSession(model_path, providers=onnxruntime.get_available_providers())
+        self.get_model_details()
 
     def prepare_input(self, image):
         self.img_height, self.img_width = image.shape[:2]
@@ -95,9 +95,9 @@ class YOLOv8:
         return boxes[indices], scores[indices], class_ids[indices]
 
     def extract_boxes(self, predictions):
-        boxes = predictions[:, :4]          # Extract boxes from predictions
-        boxes = self.rescale_boxes(boxes)   # Scale boxes to original image dimensions
-        boxes = xywh2xyxy(boxes)            # Convert boxes to xyxy format
+        boxes = predictions[:, :4]  # Extract boxes from predictions
+        boxes = self.rescale_boxes(boxes)  # Scale boxes to original image dimensions
+        boxes = xywh2xyxy(boxes)  # Convert boxes to xyxy format
 
         return boxes
 
@@ -126,12 +126,12 @@ if __name__ == '__main__':
 
     # 加载图片
     img_1 = "https://pic4.zhimg.com/80/v2-81b33cc28e4ba869b7c2790366708e97_1440w.webp"  # URL读取
-    img_2 = "../../../test_data/paml_1.jpg"    # base64读取
+    img_2 = "../../../test_data/paml_1.jpg"  # base64读取
     # _, buffer = cv2.imencode(".jpg", cv2.imread(img_2))
     # img_2 = base64.b64encode(buffer).decode('utf-8')
     img_2 = img_to_base64(cv2.imread(img_2), rgb=False)
-    img_3 = "../../../test_data/zidane.jpg"    # 路径读取
-    img_4 = cv2.imread(img_3)   # np数组读取
+    img_3 = "../../../test_data/zidane.jpg"  # 路径读取
+    img_4 = cv2.imread(img_3)  # np数组读取
     img_4 = cv2.cvtColor(img_4, cv2.COLOR_BGR2RGB)
 
     # 推理并绘制图片

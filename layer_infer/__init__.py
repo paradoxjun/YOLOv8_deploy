@@ -54,9 +54,9 @@ pose_atm_broken_action_param = {
     "class_name": "可疑人员"
 }
 
-det_hand = YOLOv8BaseDetector(**det_hand_param)
-det_coco = YOLOv8BaseDetector(**det_coco_param)
-det_bank_desk = YOLOv8BaseDetector(**det_bank_desk_param)
-det_atm_broken = YOLOv8BaseDetector(**det_atm_broken_param)
-pose_person = YOLOv8PosePredictor(**pose_person_param)
-pose_atm_broken_action = YOLOv8PosePredictor(**pose_atm_broken_action_param)
+# det_hand = YOLOv8BaseDetector(**det_hand_param)
+# det_coco = YOLOv8BaseDetector(**det_coco_param)
+# det_bank_desk = YOLOv8BaseDetector(**det_bank_desk_param)
+# det_atm_broken = YOLOv8BaseDetector(**det_atm_broken_param)
+# pose_person = YOLOv8PosePredictor(**pose_person_param)
+# pose_atm_broken_action = YOLOv8PosePredictor(**pose_atm_broken_action_param)
